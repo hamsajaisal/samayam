@@ -179,6 +179,11 @@ function renderNav() {
     ? `🌐 <span lang="ml">മലയാളം</span> <span class="key" aria-hidden="true">Alt+L</span>`
     : `🌐 <span lang="en">English</span> <span class="key" aria-hidden="true">Alt+L</span>`;
   lt.setAttribute('aria-label', toMl ? 'Change language to Malayalam – മലയാളം' : 'ഭാഷ ഇംഗ്ലീഷ് ആക്കുക – Change language to English');
+  // Update notice under the language button, on every page
+  const u = S.update || {};
+  $('#updSlot').innerHTML = ['available', 'downloading', 'ready', 'saved'].includes(u.status)
+    ? `<button type="button" class="lang-toggle upd-note" id="updNote" data-act="goUpdates">⬆️ ${esc(u.status === 'ready' ? t('Update ready to install') : `${t('New version')} ${u.version}`)}</button>`
+    : '';
   $('#skipLink').textContent = t('Skip to main content');
   $('#nav').setAttribute('aria-label', t('Main menu'));
 }
@@ -1113,6 +1118,7 @@ VIEWS.settings = () => {
     <tbody>${keys.map(([k, v]) => `<tr><th scope="row"><kbd>${esc(k)}</kbd></th><td>${esc(v)}</td></tr>`).join('')}</tbody></table>
     <p class="muted">${esc(t('Tested with NVDA, JAWS and Windows Narrator. In the timetable grid, screen readers read the day and period headers with each cell.'))}</p>
   </section>
+  ${updatesSection()}
   <section class="card" aria-labelledby="abH"><h2 id="abH">${esc(t('About'))}</h2>
     <p>Samayam (സമയം) – ${esc(t('free and open source school timetable and substitution manager.'))}</p>
     <p id="aboutInfo" class="muted"></p>
@@ -1120,6 +1126,96 @@ VIEWS.settings = () => {
     <button type="button" class="btn" data-act="openData">${esc(t('Open data folder'))}</button>
   </section>`;
 };
+// ---------- updates ----------
+S.update = { status: 'idle' };
+function updateStatusText() {
+  const u = S.update, i = u.info || {};
+  switch (u.status) {
+    case 'checking': return t('Checking for updates…');
+    case 'none': return `${t('You have the latest version')} (${i.version}).`;
+    case 'available': return `${t('A new version is available')}: ${u.version} (${t('you have')} ${i.version}).`;
+    case 'downloading': return `${t('Downloading update')}: ${u.pct || 0}%`;
+    case 'ready': return `${t('Version')} ${u.version} ${t('is downloaded. Press “Restart and install now”. Samayam will close, update itself and open again. Your data is kept.')}`;
+    case 'saved': return `${t('The new portable version is saved here')}: ${u.path}. ${t('Close this window and open the new file. Your data is kept. You can delete the old file afterwards.')}`;
+    case 'error': return `${t('Could not check or download the update. Check the internet connection and try again.')} (${u.error})`;
+    default: return i.version ? `${t('Installed version')}: ${i.version}.` : '';
+  }
+}
+function updatesSection() {
+  const u = S.update, i = u.info || {};
+  const dev = i.kind === 'dev';
+  const busy = u.status === 'checking' || u.status === 'downloading';
+  let actions = `<button type="button" class="btn" data-act="checkUpdate" id="updCheckBtn" ${dev || busy ? 'disabled' : ''}>🔄 ${esc(t('Check for updates now'))}</button>`;
+  if (u.status === 'available') {
+    actions += u.canInstall
+      ? ` <button type="button" class="btn primary" data-act="downloadUpdate" id="updDownloadBtn">${esc(i.kind === 'portable' ? t('Download the new portable version') : t('Download and install'))}</button>`
+      : ` <button type="button" class="btn primary" data-act="openReleasePage" id="updPageBtn">${esc(t('Open the download page'))}</button>`;
+  }
+  if (u.status === 'ready') actions += ` <button type="button" class="btn primary" data-act="installUpdate" id="updInstallBtn">${esc(t('Restart and install now'))}</button>`;
+  if (u.status === 'saved') actions += ` <button type="button" class="btn primary" data-act="showUpdateFile" id="updShowBtn">${esc(t('Show the new file'))}</button>`;
+  return `<section class="card" aria-labelledby="updH"><h2 id="updH" tabindex="-1">⬆️ ${esc(t('Updates'))}</h2>
+    <p class="muted">${esc(dev ? t('Updates work in the installed or portable app, not when run from source.') : i.kind === 'portable'
+      ? t('This is the portable version. A new version is downloaded as a new file next to this one.')
+      : t('New versions are installed from GitHub. Nothing is sent except a request for the latest version number.'))}</p>
+    <label class="check"><input type="checkbox" id="set_autoupd" data-change="setAutoUpdate" ${D.settings.autoUpdate !== false ? 'checked' : ''} ${dev ? 'disabled' : ''}> ${esc(t('Check for updates automatically when Samayam starts'))}</label>
+    <p id="updStatus" class="msg ${u.status === 'error' ? 'err' : u.status === 'none' ? 'ok' : ''}">${esc(updateStatusText())}</p>
+    ${u.status === 'available' && u.notes ? `<details><summary>${esc(t('What is new in'))} ${esc(u.version)}</summary><pre class="notes">${esc(u.notes)}</pre></details>` : ''}
+    <div class="toolbar">${actions}</div>
+  </section>`;
+}
+async function checkForUpdate(silent) {
+  if (!S.update.info || S.update.info.kind === 'dev' || !io.updCheck) return;
+  S.update.status = 'checking';
+  if (S.view === 'settings') render(false);
+  const r = await io.updCheck();
+  if (r.error) {
+    S.update = Object.assign(S.update, { status: silent ? 'idle' : 'error', error: r.error });
+    if (!silent) announce(updateStatusText());
+  } else if (r.available) {
+    S.update = Object.assign(S.update, { status: 'available', version: r.version, notes: r.notes, url: r.url, canInstall: r.canInstall });
+    announce(`${t('A new version of Samayam is available')}: ${r.version}. ${t('Open Settings, Updates, to install it.')}`);
+  } else {
+    S.update.status = silent ? 'idle' : 'none';
+    if (!silent) announce(updateStatusText());
+  }
+  render(false);
+}
+ACTIONS.checkUpdate = () => checkForUpdate(false);
+ACTIONS.goUpdates = () => { setView('settings'); const h = $('#updH'); if (h) { h.scrollIntoView({ block: 'start' }); h.focus(); } };
+ACTIONS.openReleasePage = () => { io.openUrl(S.update.url || 'https://github.com/hamsajaisal/samayam/releases/latest'); announce(t('Opening the download page in your web browser.')); };
+ACTIONS.downloadUpdate = async () => {
+  S.update.status = 'downloading';
+  S.update.pct = 0;
+  render(false);
+  announce(t('Downloading update. Progress is announced every 25 percent.'));
+  const r = await io.updDownload();
+  if (r.error) { S.update.status = 'error'; S.update.error = r.error; announce(updateStatusText()); }
+  else if (r.path) { S.update.status = 'saved'; S.update.path = r.path; announce(updateStatusText()); }
+  else { S.update.status = 'ready'; announce(t('Update downloaded. Press Restart and install now.')); }
+  render(false);
+  const next = $('#updInstallBtn') || $('#updShowBtn');
+  if (next) next.focus();
+};
+ACTIONS.installUpdate = async () => {
+  if (!(await confirmDlg(t('Samayam will close, install the new version and open again. Your data is kept. Continue?'), t('Restart and install now')))) return;
+  announce(t('Installing the update. Samayam will open again in a moment.'));
+  io.updInstall();
+};
+ACTIONS.showUpdateFile = () => io.updShowFile(S.update.path);
+CHANGES.setAutoUpdate = (el) => {
+  D.settings.autoUpdate = el.checked;
+  save();
+  announce(el.checked ? t('Samayam will check for updates when it starts.') : t('Automatic update check is off. Use “Check for updates now” when you want.'));
+};
+function onUpdateProgress(p) {
+  if (S.update.status !== 'downloading') return;
+  const prev = S.update.pct || 0;
+  S.update.pct = p;
+  const st = document.getElementById('updStatus');
+  if (st) st.textContent = updateStatusText();
+  if (Math.floor(p / 25) > Math.floor(prev / 25) && p < 100) announce(`${t('Downloading update')}: ${Math.floor(p / 25) * 25}%`);
+}
+
 CHANGES.setLang = (el) => { D.settings.lang = el.value; applySettings(); save(); render(false); announce(el.value === 'ml' ? 'ഭാഷ മലയാളം ആക്കി' : 'Language set to English'); };
 CHANGES.setTheme = (el) => { D.settings.theme = el.value; applySettings(); save(); announce(t('Theme changed.')); };
 CHANGES.setFont = (el) => { D.settings.fontScale = +el.value; applySettings(); save(); announce(t('Text size') + ' ' + el.value + '%'); };

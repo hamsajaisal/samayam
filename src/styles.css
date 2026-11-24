@@ -198,3 +198,6 @@ dialog form { padding: 20px 22px; }
 .guide blockquote { margin: 12px 0; }
 .guide a { color: var(--accent); }
 .guide table { margin: 10px 0; }
+.upd-note { border-color: var(--warn); color: #ffd27a; font-weight: 600; justify-content: flex-start; }
+:root[data-theme="contrast"] .upd-note { color: #ffff00; }
+pre.notes { white-space: pre-wrap; background: var(--panel-2); padding: 10px 12px; border-radius: 8px; max-height: 260px; overflow-y: auto; font-family: inherit; }

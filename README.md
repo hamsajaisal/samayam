@@ -81,6 +81,13 @@ Download either file from the Releases page:
 
 The files are not code-signed, so Windows SmartScreen may warn the first time. Choose **More info → Run anyway**.
 
+**Updates (from 1.5.0):** Settings → Updates.
+
+- "Check for updates automatically when Samayam starts" is a checkbox, on by default. You can also press "Check for updates now" at any time.
+- The installed (Setup) version downloads the update and installs it silently on restart.
+- The portable version downloads the new Portable `.exe` next to the current one.
+- Your data is kept either way.
+
 ## Run from source
 
 ```powershell
@@ -109,6 +116,18 @@ npm run dist
 ```
 
 If the build fails with "Cannot create symbolic link", extract electron-builder's `winCodeSign` archive once by hand, skipping its `darwin` folder, or turn on Windows Developer Mode.
+
+### Publishing a release (so installed copies update themselves)
+
+1. Raise `"version"` in `package.json`, for example 1.5.0 → 1.5.1.
+2. Write the release notes in a file, for example `notes.md`.
+3. Run:
+
+   ```powershell
+   npm run release -- notes.md
+   ```
+
+   This runs the tests, builds, and creates the GitHub release `v1.5.1`. The release includes `Samayam-Setup-*.exe`, its `.blockmap`, `latest.yml` (which the in-app updater reads) and `Samayam-Portable-*.exe`. It needs the GitHub CLI (`gh`) to be logged in.
 
 ## Excel formats
 

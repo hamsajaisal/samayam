@@ -1,14 +1,19 @@
 {
   "name": "samayam",
   "productName": "Samayam",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Samayam (സമയം) - an accessible school timetable generator and substitution manager for Kerala schools (LP, UP, HS, HSS). Works with NVDA, JAWS and Narrator.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "smoke": "electron . --smoke",
     "test": "node test/test.js",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win --publish never",
+    "release": "node scripts/release.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hamsajaisal/samayam.git"
   },
   "keywords": [
     "timetable",
@@ -34,16 +39,27 @@
       "output": "dist",
       "buildResources": "build"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "hamsajaisal",
+        "repo": "samayam"
+      }
+    ],
     "win": {
       "icon": "build/icon.png",
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -60,6 +76,7 @@
     }
   },
   "dependencies": {
+    "electron-updater": "^6.3.9",
     "exceljs": "^4.4.0"
   },
   "devDependencies": {

@@ -1576,6 +1576,15 @@ async function init() {
   wireEvents();
   setView(D.school ? 'dashboard' : 'school');
   io.info().then((i) => { const el = document.getElementById('aboutInfo'); if (el) el.textContent = `Version ${i.version} · ${i.dataFile}`; }).catch(() => {});
+  // Updates: know our version/kind; check quietly a little after start if the user allows it
+  if (io.updInfo) {
+    io.onUpdProgress(onUpdateProgress);
+    io.updInfo().then((i) => {
+      S.update.info = i;
+      if (S.view === 'settings') render(false);
+      if (D.settings.autoUpdate !== false && i.kind !== 'dev' && !i.noAutoCheck) setTimeout(() => checkForUpdate(true), 6000);
+    }).catch(() => {});
+  }
 }
 
 // Automated check used by `npm run smoke`: renders every page with demo data.

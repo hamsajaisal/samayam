@@ -91,7 +91,7 @@ This is free software under the MIT licence. Anyone may use, share and improve i
 6. In the installer, use Tab and Enter to press **Next**, **Install** and **Finish**. If "Run Samayam" is ticked, the app opens when installation finishes.
 7. To open the app later: press the **Windows key**, type "Samayam" and press Enter.
 
-> **When a new version comes out:** download the new Setup file and install it. Your data is kept. Still, it is wise to take a backup first ([section 14](#14-import--export--backup-alt9)).
+> **When a new version comes out:** from version 1.5 on, the app itself looks for new versions and helps you install them (see "Updates" in [section 15](#15-settings-alt0)). Your data is kept. Still, it is wise to take a backup now and then ([section 14](#14-import--export--backup-alt9)).
 
 ---
 
@@ -910,6 +910,34 @@ Open the "Excel format help" part to read this inside the app too.
 - **About:** the app version and where the data file is kept. There are two buttons here:
   - **User guide (F1)** – opens this guide inside the app. No internet needed.
   - **Open data folder** – opens the folder with the data file.
+
+### Updates
+
+When a new version is published on GitHub, the app finds it. In Settings (Alt+0), the **"Updates"** part has:
+
+- **"Check for updates automatically when Samayam starts"** – a checkbox.
+  - When ticked (the default), the app quietly checks a few seconds after it opens.
+  - If there is a new version, the screen reader says "A new version of Samayam is available". A **"⬆️ New version 1.x.x"** button also appears below the language button; pressing it opens this Updates part.
+  - Without internet it says nothing and doesn't disturb you.
+  - Untick it and the app never checks by itself.
+- **"Check for updates now"** – a button. Press it any time to check. The app tells you the result: "You have the latest version" or "A new version is available: 1.x.x".
+- **"What is new in …"** – read what changed in the new version. Press Enter to open it.
+
+**If you installed with Setup:**
+
+1. Press **"Download and install"**. The download starts, and the app announces progress at 25%, 50% and 75%.
+2. When it finishes, focus moves to the **"Restart and install now"** button. Press it.
+3. The app asks you to confirm. Then it closes, installs the new version silently and opens again. You don't need to press anything in an installer. Your data is kept.
+
+**If you use the Portable file:** a running file cannot replace itself, so:
+
+1. Press **"Download the new portable version"**. The new Portable file is downloaded into the same folder as the current one.
+2. The app tells you where it was saved. **"Show the new file"** opens that folder with the new file selected.
+3. Close the current app (Alt+F4) and open the new file. Your data is still there. You can delete the old file afterwards.
+
+**Privacy:** checking for updates only asks GitHub "what is the latest version?". No information about your school or teachers is sent.
+
+> Versions up to 1.4.0 have no update feature, so 1.5.0 has to be installed once by hand ([section 2](#2-installing)). After that, new versions come through the app itself.
 
 Data is kept in the file `%APPDATA%\Samayam\samayam-data.json`. Each time it saves, the previous version is kept as a `.bak` file.
 

@@ -133,7 +133,7 @@
       leaves: [],
       substitutions: {},
       specialDays: {},
-      settings: { lang: 'en', theme: 'system', fontScale: 100 }
+      settings: { lang: 'en', theme: 'system', fontScale: 100, autoUpdate: true }
     };
   }
 
