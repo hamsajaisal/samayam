@@ -1,0 +1,68 @@
+{
+  "name": "samayam",
+  "productName": "Samayam",
+  "version": "1.2.2",
+  "description": "Samayam (സമയം) - an accessible school timetable generator and substitution manager for Kerala schools (LP, UP, HS, HSS). Works with NVDA, JAWS and Narrator.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "smoke": "electron . --smoke",
+    "test": "node test/test.js",
+    "dist": "electron-builder --win"
+  },
+  "keywords": [
+    "timetable",
+    "school",
+    "substitution",
+    "kerala",
+    "accessibility",
+    "nvda",
+    "electron"
+  ],
+  "license": "MIT",
+  "build": {
+    "appId": "org.samayam.timetable",
+    "productName": "Samayam",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Samayam",
+      "artifactName": "Samayam-Setup-${version}.exe"
+    },
+    "portable": {
+      "artifactName": "Samayam-Portable-${version}.exe"
+    }
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  }
+}
