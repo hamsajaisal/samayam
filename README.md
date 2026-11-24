@@ -4,6 +4,8 @@
 
 Samayam is a free, open-source Windows app for schools. It works with screen readers (NVDA, JAWS, Narrator) and is also built for sighted users.
 
+📖 **[User guide (Malayalam, keyboard-first)](docs/USER_GUIDE.md)** – also opens from the app with **F1**.
+
 > ടീച്ചർമാർ ലീവ് ആകുന്ന ദിവസം ഒരു ക്ലാസും ആളില്ലാതെ പോകരുത്. അതിനാണ് ഈ ആപ്പ്. ടൈം ടേബിൾ ഉണ്ടാക്കാനും, ലീവ് ആയ ടീച്ചർമാരുടെ പിരീഡുകൾക്ക് ഫ്രീ ആയ ടീച്ചർമാരെ തുല്യമായി വീതിച്ചു കൊടുക്കാനും, ആ ലിസ്റ്റ് WhatsApp-ലോ PDF ആയോ ഷെയർ ചെയ്യാനും ഇത് സഹായിക്കും.
 
 ## Features

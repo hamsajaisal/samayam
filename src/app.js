@@ -181,11 +181,14 @@ function setView(v, opts = {}) {
   render(true);
 }
 
+const FOCUSABLE = 'input, select, textarea, button, summary, [tabindex="0"]';
 function render(focusHeading) {
   const active = document.activeElement;
   const prevId = active && active.id;
-  renderNav();
   const main = $('#main');
+  // an element without an id is found again by its position on the page
+  const prevIdx = !prevId && active && main.contains(active) ? $$(FOCUSABLE, main).indexOf(active) : -1;
+  renderNav();
   let html;
   try {
     html = VIEWS[S.view]();
@@ -201,6 +204,9 @@ function render(focusHeading) {
     if (h1) h1.focus();
   } else if (prevId) {
     const el = document.getElementById(prevId);
+    if (el) el.focus();
+  } else if (prevIdx >= 0) {
+    const el = $$(FOCUSABLE, main)[prevIdx];
     if (el) el.focus();
   }
 }
@@ -1071,7 +1077,8 @@ VIEWS.settings = () => {
     ['L', t('Lock or unlock the period (generator will not move it)')],
     ['Delete', t('Clear the period')],
     ['Ctrl + Z', t('Undo the last timetable change')],
-    ['Escape', t('Cancel a pick or close a dialog')]
+    ['Escape', t('Cancel a pick or close a dialog')],
+    ['F1', t('Open the user guide')]
   ];
   return `<h1>${esc(t('Settings'))}</h1>
   <div class="card"><div class="grid3">
@@ -1087,6 +1094,7 @@ VIEWS.settings = () => {
   <section class="card" aria-labelledby="abH"><h2 id="abH">${esc(t('About'))}</h2>
     <p>Samayam (സമയം) – ${esc(t('free and open source school timetable and substitution manager.'))}</p>
     <p id="aboutInfo" class="muted"></p>
+    <button type="button" class="btn primary" data-act="openGuide">📖 ${esc(t('User guide'))} (F1)</button>
     <button type="button" class="btn" data-act="openData">${esc(t('Open data folder'))}</button>
   </section>`;
 };
@@ -1094,3 +1102,5 @@ CHANGES.setLang = (el) => { D.settings.lang = el.value; applySettings(); save();
 CHANGES.setTheme = (el) => { D.settings.theme = el.value; applySettings(); save(); announce(t('Theme changed.')); };
 CHANGES.setFont = (el) => { D.settings.fontScale = +el.value; applySettings(); save(); announce(t('Text size') + ' ' + el.value + '%'); };
 ACTIONS.openData = () => io.openDataFolder();
+const GUIDE_URL = 'https://github.com/hamsajaisal/samayam/blob/main/docs/USER_GUIDE.md';
+ACTIONS.openGuide = () => { io.openUrl(GUIDE_URL); announce(t('Opening the user guide in your web browser.')); };

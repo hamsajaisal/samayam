@@ -1385,8 +1385,26 @@ function wireEvents() {
     const f = e.target.closest('[data-submit]');
     if (f) { e.preventDefault(); ACTIONS[f.dataset.submit](f); }
   });
+  // Lists (select): on Windows every arrow key fires "change". Wait until the
+  // user confirms (Enter) or leaves the list (Tab), so arrowing through the
+  // options only reads them and does not save or redraw the page each time.
+  let lastPointer = 0;
+  main.addEventListener('pointerdown', () => (lastPointer = Date.now()));
+  const commitSelect = (el) => {
+    if (!el.dataset.pending) return;
+    delete el.dataset.pending;
+    el._applying = true;
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el._applying = false;
+  };
+  main.addEventListener('focusout', (e) => { if (e.target.tagName === 'SELECT') commitSelect(e.target); });
+  main.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.tagName === 'SELECT') { e.preventDefault(); commitSelect(e.target); } });
   main.addEventListener('change', (e) => {
     const el = e.target;
+    if (el.tagName === 'SELECT' && !el._applying && document.activeElement === el && Date.now() - lastPointer > 1500) {
+      el.dataset.pending = '1';
+      return;
+    }
     if (el.dataset.combo) {
       const item = resolveCombo(el);
       if (!item) {
@@ -1400,7 +1418,9 @@ function wireEvents() {
       announce(`${item.name} ${t('selected.')}`);
       return;
     }
-    if (el.dataset.change && CHANGES[el.dataset.change]) { CHANGES[el.dataset.change](el); return; }
+    // Run after the browser has finished moving focus (e.g. Tab out of a field),
+    // so the page refresh keeps focus where the user went, not where they were.
+    if (el.dataset.change && CHANGES[el.dataset.change]) { setTimeout(() => CHANGES[el.dataset.change](el), 0); return; }
     if (S.view !== 'school' || !S.draft) return;
     if (el.dataset.draftLevel) {
       const k = el.dataset.draftLevel;
@@ -1484,6 +1504,7 @@ function wireEvents() {
     else render(false);
   });
   document.addEventListener('keydown', (e) => {
+    if (e.key === "F1") { e.preventDefault(); ACTIONS.openGuide(); return; }
     if (e.altKey && !e.ctrlKey && /^Digit[0-9]$/.test(e.code)) {
       const k = e.code.slice(5);
       const item = NAV.find((n) => n[3] === k);
@@ -1567,6 +1588,28 @@ window.__smoke = async () => {
     out.schoolFridayPicker = !!$('#sc_tday');
     $('#wk_frisun').click();
     out.friSunDays = S.draft.workingDays.map(dayName).join(',') + ' / radio kept: ' + $('#wk_frisun').checked;
+    // Tab out of a changed number field: focus must land on the next field, not jump back
+    setView('allocation');
+    const pw = $('input[data-change="lessonPw"]');
+    const md = document.getElementById(pw.id.replace('lpw_', 'lmd_'));
+    pw.focus(); pw.value = String(+pw.value + 1);
+    pw.dispatchEvent(new Event('change', { bubbles: true }));
+    md.focus();
+    await new Promise((r) => setTimeout(r, 80));
+    out.tabAfterChange = (document.activeElement && document.activeElement.id) === md.id ? 'ok: next field' : 'BUG: focus on ' + (document.activeElement && document.activeElement.id);
+    // Arrowing through the substitute list must not save; leaving it (Tab) saves
+    setView('substitution');
+    const sb = $('#sb_0');
+    const before = S.sub.rows[0].subTeacherId;
+    sb.focus();
+    sb.selectedIndex = [...sb.options].findIndex((o) => o.value && o.value !== before);
+    sb.dispatchEvent(new Event('change', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 60));
+    const whileArrowing = S.sub.rows[0].subTeacherId === before;
+    const nextEl = $('[data-act="subWhatsApp"]');
+    nextEl.focus();
+    await new Promise((r) => setTimeout(r, 80));
+    out.selectCommit = `${whileArrowing ? 'ok: not saved while arrowing' : 'BUG: saved while arrowing'} / ${S.sub.rows[0].subTeacherId !== before ? 'ok: saved on Tab' : 'BUG: not saved on Tab'}`;
     // typing a class name into the timetable combo box
     setView('timetable');
     const tb = $('#tt_target');
