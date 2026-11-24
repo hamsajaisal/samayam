@@ -378,6 +378,8 @@ async function updateSelfTest() {
       const res = await downloadUpdate((p) => { const m = Math.floor(p / 25) * 25; if (!marks.has(m)) { marks.add(m); log('progress', m + '%'); } });
       log('download result', JSON.stringify(res));
       if (res.path) log('file size', fs.statSync(res.path).size);
+      // --and-install: exactly what "Restart and install now" does
+      if (res.ready && process.argv.includes('--and-install')) { log('installing'); getUpdater().quitAndInstall(true, true); return; }
     }
   } catch (e) { log('ERROR', e && e.stack || e); }
   app.exit(0);
