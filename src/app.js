@@ -1102,5 +1102,6 @@ CHANGES.setLang = (el) => { D.settings.lang = el.value; applySettings(); save();
 CHANGES.setTheme = (el) => { D.settings.theme = el.value; applySettings(); save(); announce(t('Theme changed.')); };
 CHANGES.setFont = (el) => { D.settings.fontScale = +el.value; applySettings(); save(); announce(t('Text size') + ' ' + el.value + '%'); };
 ACTIONS.openData = () => io.openDataFolder();
-const GUIDE_URL = 'https://github.com/hamsajaisal/samayam/blob/main/docs/USER_GUIDE.md';
-ACTIONS.openGuide = () => { io.openUrl(GUIDE_URL); announce(t('Opening the user guide in your web browser.')); };
+const GUIDE_BASE = 'https://github.com/hamsajaisal/samayam/blob/main/docs/';
+const guideUrl = () => GUIDE_BASE + (I18N.getLang() === 'ml' ? 'USER_GUIDE.md' : 'USER_GUIDE_EN.md');
+ACTIONS.openGuide = () => { io.openUrl(guideUrl()); announce(t('Opening the user guide in your web browser.')); };

@@ -1622,6 +1622,7 @@ window.__smoke = async () => {
     S.tt.list = true; setView('timetable'); out.listView = $$('#main li').length; S.tt.list = false;
     S.now.mode = 'teacher'; setView('now'); out.nowTeacher = $('#nowOut').textContent.slice(0, 80);
     D.settings.lang = 'ml'; applySettings(); setView('dashboard'); out.mlHeading = $('#main h1').textContent;
+    out.guideUrls = [guideUrl().split('/').pop(), (I18N.setLang('en'), guideUrl().split('/').pop())].join(' / '); I18N.setLang('ml');
   } catch (e) {
     out.errors.push(String(e && e.stack || e));
   }
