@@ -1359,6 +1359,49 @@ ACTIONS.resetAll = async () => {
 };
 
 // ======================================================================
+// USER GUIDE (built in, works without internet)
+// ======================================================================
+S.guideCache = {};
+function loadGuide(lang) {
+  if (S.guideCache[lang] || S.guideLoading === lang) return;
+  S.guideLoading = lang;
+  Promise.resolve(io.readGuide(lang))
+    .then((txt) => { S.guideCache[lang] = SamayamMD.render(txt); })
+    .catch((err) => { S.guideCache[lang] = { html: `<h1>${esc(t('User guide'))}</h1><p class="msg err">${esc(String(err))}</p>`, headings: [] }; })
+    .then(() => { S.guideLoading = null; if (S.view === 'guide' && (S.guideLang || 'en') === lang) render(true); });
+}
+VIEWS.guide = () => {
+  const lang = S.guideLang || I18N.getLang();
+  const doc = S.guideCache[lang];
+  if (!doc) { loadGuide(lang); return `<h1>${esc(t('User guide'))}</h1><p role="status">${esc(t('Loading…'))}</p>`; }
+  const other = lang === 'ml' ? 'en' : 'ml';
+  return `<div class="toolbar">
+      <button type="button" class="btn" data-act="guideLang" data-lang="${other}" id="guideSwitch">🌐 ${other === 'ml' ? '<span lang="ml">മലയാളം ഗൈഡ്</span>' : '<span lang="en">English guide</span>'}</button>
+      <button type="button" class="btn" data-act="openGuideOnline" id="guideOnline">${esc(t('Open online version'))}</button>
+    </div>
+    <article class="guide" lang="${lang}">${doc.html}</article>`;
+};
+ACTIONS.guideLang = (el) => { S.guideLang = el.dataset.lang; render(true); };
+
+// Links inside the guide: jump to a heading, switch guide language, or open the web.
+function guideLink(e) {
+  const a = e.target.closest('a[data-anchor], a[data-guide-file], a[data-external]');
+  if (!a) return false;
+  e.preventDefault();
+  if (a.dataset.anchor) {
+    const h = document.getElementById(a.dataset.anchor);
+    if (h) { h.scrollIntoView({ block: 'start' }); h.focus(); }
+  } else if (a.dataset.guideFile) {
+    S.guideLang = /USER_GUIDE\.md/i.test(a.dataset.guideFile) ? 'ml' : 'en';
+    render(true);
+  } else {
+    io.openUrl(a.getAttribute('href'));
+    announce(t('Opening in your web browser.'));
+  }
+  return true;
+}
+
+// ======================================================================
 // EVENTS & START-UP
 // ======================================================================
 function migrate(data) {
@@ -1376,6 +1419,7 @@ function migrate(data) {
 function wireEvents() {
   const main = $('#main');
   document.addEventListener('click', (e) => {
+    if (guideLink(e)) return;
     const nav = e.target.closest('[data-nav]');
     if (nav) { setView(nav.dataset.nav); return; }
     const a = e.target.closest('[data-act]');
@@ -1505,6 +1549,7 @@ function wireEvents() {
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === "F1") { e.preventDefault(); ACTIONS.openGuide(); return; }
+    if (e.altKey && !e.ctrlKey && e.code === "KeyL") { e.preventDefault(); ACTIONS.toggleLang(); const lt = document.getElementById("langToggle"); if (document.activeElement === document.body && lt) lt.focus(); return; }
     if (e.altKey && !e.ctrlKey && /^Digit[0-9]$/.test(e.code)) {
       const k = e.code.slice(5);
       const item = NAV.find((n) => n[3] === k);
@@ -1623,6 +1668,25 @@ window.__smoke = async () => {
     S.now.mode = 'teacher'; setView('now'); out.nowTeacher = $('#nowOut').textContent.slice(0, 80);
     D.settings.lang = 'ml'; applySettings(); setView('dashboard'); out.mlHeading = $('#main h1').textContent;
     out.guideUrls = [guideUrl().split('/').pop(), (I18N.setLang('en'), guideUrl().split('/').pop())].join(' / '); I18N.setLang('ml');
+    // language button + Alt+L: Malayalam -> English -> Malayalam
+    const lt = $('#langToggle');
+    const lt1 = lt.textContent.trim();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'l', code: 'KeyL', altKey: true, bubbles: true }));
+    const afterAlt = I18N.getLang() + ':' + $('#main h1').textContent;
+    lt.click();
+    out.langToggle = `${lt1} | Alt+L -> ${afterAlt} | button -> ${I18N.getLang()}`;
+    // built-in guide, offline: open with F1, render, follow a contents link
+    for (const lang of ['ml', 'en']) {
+      if (I18N.getLang() !== lang) ACTIONS.toggleLang();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F1', bubbles: true }));
+      for (let k = 0; k < 40 && !$('#main article.guide'); k++) await new Promise((r) => setTimeout(r, 50));
+      const art = $('#main article.guide');
+      const links = $$('a[data-anchor]', art);
+      const broken = links.filter((a) => !document.getElementById(a.dataset.anchor)).length;
+      const target = links[8];
+      target.click();
+      out['guide_' + lang] = `h1="${(art.querySelector('h1') || {}).textContent}" h2=${$$('h2', art).length} tables=${$$('table', art).length} links=${links.length} broken=${broken} jump=${document.activeElement && document.activeElement.id === target.dataset.anchor ? 'ok' : 'BUG'} focusOnH1First=${art.querySelector('h1') ? 'yes' : 'no'}`;
+    }
   } catch (e) {
     out.errors.push(String(e && e.stack || e));
   }

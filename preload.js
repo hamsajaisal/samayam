@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('api', {
   saveData: (json) => ipcRenderer.invoke('data:save', json),
   info: () => ipcRenderer.invoke('app:info'),
   openDataFolder: () => ipcRenderer.invoke('app:openDataFolder'),
+  readGuide: (lang) => ipcRenderer.invoke('guide:read', lang),
   copyText: (text) => ipcRenderer.invoke('clip:write', text),
   shareWhatsApp: (text) => ipcRenderer.invoke('share:whatsapp', text),
   openUrl: (url) => ipcRenderer.invoke('open:url', url),

@@ -2,7 +2,7 @@
 
 **School timetables and substitutions – for blind, low-vision and sighted users alike**
 
-This guide is written mainly for people who use a screen reader (NVDA, JAWS or Windows Narrator). Every task is explained **using only the keyboard**. Press **F1** anywhere in the app to open this guide.
+This guide is written mainly for people who use a screen reader (NVDA, JAWS or Windows Narrator). Every task is explained **using only the keyboard**. Press **F1** anywhere in the app to open this guide inside the app. **No internet is needed.**
 
 മലയാളം പതിപ്പ്: [USER_GUIDE.md](USER_GUIDE.md)
 
@@ -101,9 +101,10 @@ This is free software under the MIT licence. Anyone may use, share and improve i
 
 The app window has two parts:
 
-1. **The main menu on the left:**
-   - Screen readers announce it as a "navigation landmark".
-   - It has ten buttons: Today, Now, Leave & Substitution, Timetable, Classes & Subjects, Teachers, School Profile, Reports, Import / Export, Settings.
+1. **The left side:**
+   - At the very top, the **language button** ([see below](#changing-the-language)).
+   - Below it, the **main menu**. Screen readers announce it as a "navigation landmark".
+   - The menu has eleven buttons: Today, Now, Leave & Substitution, Timetable, Classes & Subjects, Teachers, School Profile, Reports, Import / Export, Settings, User guide.
    - The button for the page you are on is announced as "current page".
 2. **The main area on the right:**
    - This shows the content of the chosen page.
@@ -119,7 +120,8 @@ The app window has two parts:
 | **Space** | Tick or untick a checkbox; press a button |
 | **Up and Down arrows** | Change the choice in a list (combo box); change radio buttons; increase or decrease the number in a number box |
 | **Escape** | Close an open dialog without saving |
-| **F1** | Open this guide |
+| **F1** | Open this guide inside the app (no internet needed) |
+| **Alt+L** | Switch language: English ↔ Malayalam |
 
 Page shortcuts:
 
@@ -135,6 +137,32 @@ Page shortcuts:
 | Alt+8 | Reports |
 | Alt+9 | Import / Export |
 | Alt+0 | Settings |
+| F1 | User guide |
+
+### Changing the language
+
+The app can be used in English or Malayalam. It starts in English the first time. There are three ways to change the language, from any page, including the first Welcome page:
+
+1. Press **Alt+L**. It switches from English to Malayalam, or from Malayalam to English. The app says "ഭാഷ മലയാളം ആക്കി" or "Language changed to English". This is the quickest way.
+2. **The language button:** at the top of the left side, above the menu. Press Shift+Tab to go up past the menu and you reach it.
+   - When the app is in English the button says "മലയാളം"; when it is in Malayalam it says "English". That is, it shows the language you will switch to.
+   - Screen readers read it as "Change language to Malayalam".
+   - Press Enter.
+3. **Settings (Alt+0):** in the "Language" list, choose English or മലയാളം with the arrow keys and press Enter.
+
+The app remembers your choice, so it opens in the same language next time. After you switch, the guide (F1) also opens in that language.
+
+> In Malayalam, the menu, page headings and main buttons are in Malayalam. Some explanations and messages are still in English; they will be translated step by step.
+
+### Reading this guide inside the app
+
+- Press **F1**, or the **"User guide"** button in the menu. The guide opens inside the app itself, so it works in schools without internet too.
+- Focus goes to the guide's heading. Move between parts with your screen reader's **H** key.
+- Press Enter on a link in the "Contents" list to jump straight to the heading of that part.
+- At the top of the guide there are two buttons:
+  - **"മലയാളം ഗൈഡ്" / "English guide"** – change only the guide's language.
+  - **"Open online version"** – if you have internet, open the GitHub version in your browser.
+- To leave the guide, use any of the Alt+1 to Alt+0 shortcuts.
 
 ### How the app talks to you
 
@@ -875,12 +903,12 @@ Open the "Excel format help" part to read this inside the app too.
 
 ## 15. Settings (Alt+0)
 
-- **Language:** English or Malayalam (മലയാളം). The interface language changes at once. The main headings and buttons become Malayalam; some explanations are still in English.
+- **Language:** English or Malayalam (മലയാളം). Choose with the arrow keys and press Enter. You can also switch from anywhere with **Alt+L** or the language button above the menu ([section 3](#changing-the-language)).
 - **Theme:** System (Windows' setting), Light, Dark, **High contrast**. High contrast helps people with low vision: black background, white text and yellow buttons.
 - **Text size:** 90% to 150%.
 - **Keyboard shortcuts:** a table of all shortcuts.
 - **About:** the app version and where the data file is kept. There are two buttons here:
-  - **User guide (F1)** – opens this guide.
+  - **User guide (F1)** – opens this guide inside the app. No internet needed.
   - **Open data folder** – opens the folder with the data file.
 
 Data is kept in the file `%APPDATA%\Samayam\samayam-data.json`. Each time it saves, the previous version is kept as a `.bak` file.
@@ -969,7 +997,8 @@ Data is kept in the file `%APPDATA%\Samayam\samayam-data.json`. Each time it sav
 | Alt+8 | Reports |
 | Alt+9 | Import / Export |
 | Alt+0 | Settings |
-| F1 | Open this guide |
+| F1 | Open this guide inside the app (no internet needed) |
+| Alt+L | Switch language: English ↔ Malayalam |
 | Tab / Shift+Tab | Next / previous control |
 | Escape | Close a dialog |
 

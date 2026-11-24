@@ -12,6 +12,7 @@ const io = window.api || {
   saveData: async (j) => { localStorage.setItem('samayam-data', j); return true; },
   info: async () => ({ version: 'browser', dataFile: 'browser localStorage' }),
   openDataFolder: async () => {},
+  readGuide: async (lang) => (await fetch('../docs/' + (lang === 'ml' ? 'USER_GUIDE.md' : 'USER_GUIDE_EN.md'))).text(),
   copyText: async (s) => { await navigator.clipboard.writeText(s); return true; },
   shareWhatsApp: async (s) => { window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(s)); return 'web'; },
   openUrl: async (u) => window.open(u),
@@ -159,21 +160,41 @@ const NAV = [
   ['school', 'School Profile', '🏫', '7'],
   ['reports', 'Reports', '📊', '8'],
   ['data', 'Import / Export', '💾', '9'],
-  ['settings', 'Settings', '⚙️', '0']
+  ['settings', 'Settings', '⚙️', '0'],
+  ['guide', 'User guide', '📖', 'F1']
 ];
+const ALWAYS_OPEN = ['school', 'settings', 'data', 'guide'];
+const keyLabel = (key) => (key.length === 1 ? 'Alt+' + key : key);
 
 function renderNav() {
   const ready = !!D.school;
-  $('#nav').innerHTML = `<ul>${NAV.filter(([v]) => ready || ['school', 'settings', 'data'].includes(v)).map(([v, label, ico, key]) =>
-    `<li><button type="button" data-nav="${v}" ${S.view === v ? 'aria-current="page"' : ''} aria-keyshortcuts="Alt+${key}">
-      <span><span class="ico" aria-hidden="true">${ico}</span>${esc(t(label))}</span><span class="key" aria-hidden="true">Alt+${key}</span></button></li>`).join('')}</ul>`;
+  $('#nav').innerHTML = `<ul>${NAV.filter(([v]) => ready || ALWAYS_OPEN.includes(v)).map(([v, label, ico, key]) =>
+    `<li><button type="button" data-nav="${v}" ${S.view === v ? 'aria-current="page"' : ''} aria-keyshortcuts="${keyLabel(key)}">
+      <span><span class="ico" aria-hidden="true">${ico}</span>${esc(t(label))}</span><span class="key" aria-hidden="true">${keyLabel(key)}</span></button></li>`).join('')}</ul>`;
   $('#brandSchool').textContent = D.school ? D.school.name : '';
+  // Language switch, always visible: shows the language you can switch TO.
+  const lt = $('#langToggle');
+  const toMl = I18N.getLang() !== 'ml';
+  lt.innerHTML = toMl
+    ? `🌐 <span lang="ml">മലയാളം</span> <span class="key" aria-hidden="true">Alt+L</span>`
+    : `🌐 <span lang="en">English</span> <span class="key" aria-hidden="true">Alt+L</span>`;
+  lt.setAttribute('aria-label', toMl ? 'Change language to Malayalam – മലയാളം' : 'ഭാഷ ഇംഗ്ലീഷ് ആക്കുക – Change language to English');
   $('#skipLink').textContent = t('Skip to main content');
   $('#nav').setAttribute('aria-label', t('Main menu'));
 }
 
+ACTIONS.toggleLang = () => {
+  D.settings.lang = I18N.getLang() === 'ml' ? 'en' : 'ml';
+  applySettings();
+  save();
+  S.guideLang = D.settings.lang;
+  render(false);
+  announce(D.settings.lang === 'ml' ? 'ഭാഷ മലയാളം ആക്കി' : 'Language changed to English');
+};
+
 function setView(v, opts = {}) {
-  if (!D.school && !['school', 'settings', 'data'].includes(v)) v = 'school';
+  if (!D.school && !ALWAYS_OPEN.includes(v)) v = 'school';
+  if (v === 'guide' && (opts.lang || !S.guideLang)) S.guideLang = opts.lang || I18N.getLang();
   S.view = v;
   if (v === 'school') S.draft = clone(D.school || PR.defaultSchool());
   if (v === 'substitution' && !S.sub.date) loadSubDate(todayStr());
@@ -1078,7 +1099,8 @@ VIEWS.settings = () => {
     ['Delete', t('Clear the period')],
     ['Ctrl + Z', t('Undo the last timetable change')],
     ['Escape', t('Cancel a pick or close a dialog')],
-    ['F1', t('Open the user guide')]
+    ['F1', t('Open the user guide (works without internet)')],
+    ['Alt + L', t('Switch language: English / Malayalam')]
   ];
   return `<h1>${esc(t('Settings'))}</h1>
   <div class="card"><div class="grid3">
@@ -1104,4 +1126,5 @@ CHANGES.setFont = (el) => { D.settings.fontScale = +el.value; applySettings(); s
 ACTIONS.openData = () => io.openDataFolder();
 const GUIDE_BASE = 'https://github.com/hamsajaisal/samayam/blob/main/docs/';
 const guideUrl = () => GUIDE_BASE + (I18N.getLang() === 'ml' ? 'USER_GUIDE.md' : 'USER_GUIDE_EN.md');
-ACTIONS.openGuide = () => { io.openUrl(guideUrl()); announce(t('Opening the user guide in your web browser.')); };
+ACTIONS.openGuide = () => setView('guide', { lang: I18N.getLang() });
+ACTIONS.openGuideOnline = () => { io.openUrl(guideUrl()); announce(t('Opening the online guide in your web browser.')); };

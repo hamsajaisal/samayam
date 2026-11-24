@@ -65,7 +65,7 @@ function runSmoke() {
       const dir = shotArg.slice(8);
       fs.mkdirSync(dir, { recursive: true });
       await win.webContents.executeJavaScript('D.settings.lang="en"; applySettings(); 1');
-      for (const v of ['dashboard', 'timetable', 'substitution', 'now', 'allocation', 'reports']) {
+      for (const v of ['dashboard', 'timetable', 'substitution', 'now', 'allocation', 'reports', 'guide']) {
         await win.webContents.executeJavaScript(`setView(${JSON.stringify(v)}); 1`);
         await new Promise((r) => setTimeout(r, 400));
         const img = await win.webContents.capturePage();
@@ -107,6 +107,12 @@ ipcMain.handle('app:info', async () => ({
 }));
 
 ipcMain.handle('app:openDataFolder', async () => shell.openPath(path.dirname(dataFile())));
+
+// The user guides ship inside the app, so they work without internet.
+ipcMain.handle('guide:read', async (_e, lang) => {
+  const name = lang === 'ml' ? 'USER_GUIDE.md' : 'USER_GUIDE_EN.md';
+  return fs.readFileSync(path.join(__dirname, 'docs', name), 'utf8');
+});
 
 // ---------- sharing ----------
 ipcMain.handle('clip:write', async (_e, text) => {

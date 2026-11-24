@@ -172,6 +172,18 @@ test('school with Friday and Sunday holiday: Saturday has classes, Friday has no
   assert.strictEqual(Sub.plan(data, '2026-11-27', [{ teacherId: data.teachers[0].id, session: 'full' }]).rows.length, 0);
 });
 
+test('built-in guides: every contents link points to a real heading', () => {
+  const MD = require('../src/md.js');
+  const fs = require('fs');
+  const path = require('path');
+  for (const f of ['USER_GUIDE.md', 'USER_GUIDE_EN.md']) {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'docs', f), 'utf8');
+    const ids = new Set(MD.render(src).headings.map((h) => h.id));
+    const missing = [...src.matchAll(/\]\(#([^)]+)\)/g)].map((m) => m[1]).filter((a) => !ids.has(a));
+    assert.deepStrictEqual(missing, [], f + ' has broken links');
+  }
+});
+
 test('sunday is not a working day', () => {
   assert.strictEqual(Sub.dayIndexFor(P.defaultSchool(), '2026-11-22'), -1);
 });

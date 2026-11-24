@@ -177,3 +177,24 @@ dialog form { padding: 20px 22px; }
   main { padding: 16px; }
   .absent-item { grid-template-columns: 1fr; }
 }
+
+/* language switch in the side bar */
+.lang-toggle {
+  width: 100%; margin: 0 0 14px; padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,.35);
+  background: transparent; color: var(--side-text); font: inherit; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 6px;
+}
+.lang-toggle:hover { background: var(--side-active); }
+.lang-toggle .key { font-size: .72rem; opacity: .65; }
+
+/* built-in user guide */
+.guide { max-width: 900px; line-height: 1.75; }
+.guide h1 { margin-top: 6px; }
+.guide h2 { margin-top: 34px; padding-top: 12px; border-top: 1px solid var(--border); }
+.guide h3 { margin-top: 22px; }
+.guide li { margin: 4px 0; }
+.guide pre { background: var(--panel-2); border: 1px solid var(--border); padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
+.guide code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; }
+.guide pre code { background: none; padding: 0; }
+.guide blockquote { margin: 12px 0; }
+.guide a { color: var(--accent); }
+.guide table { margin: 10px 0; }
